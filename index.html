@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>html{color-scheme:light dark}body{margin:0}</style>
+<title>Satisfaction with Life Scale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif&display=swap">
+<style>
+  /* Layout: one centered reading column. Intro, five items, score card, score guide, factors, sources. */
+  :root {
+    --bg: #f6f8f8;
+    --surface: #ffffff;
+    --fg: #14262b;
+    --muted: #4d6168;
+    --line: #d3dde0;
+    --accent: #1d5f6c;
+    --accent-fg: #ffffff;
+    --marker: #c4452d;
+    --b1: #dbe7e9; --b2: #bad3d7; --b3: #8db6bd; --b4: #5c949e; --b5: #327380; --b6: #184e5a;
+    --focus: #c4452d;
+    --font-display: "Instrument Serif", Georgia, "Times New Roman", serif;
+    --font-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1b1f; --surface: #162a30; --fg: #e6eff1; --muted: #9db3b9; --line: #2b444c;
+      --accent: #7cc4d0; --accent-fg: #0f1b1f; --marker: #ff8b6e;
+      --b1: #22393f; --b2: #2b4a52; --b3: #3a6570; --b4: #4f8693; --b5: #6aa7b4; --b6: #93cbd6;
+      --focus: #ff8b6e;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1b1f; --surface: #162a30; --fg: #e6eff1; --muted: #9db3b9; --line: #2b444c;
+    --accent: #7cc4d0; --accent-fg: #0f1b1f; --marker: #ff8b6e;
+    --b1: #22393f; --b2: #2b4a52; --b3: #3a6570; --b4: #4f8693; --b5: #6aa7b4; --b6: #93cbd6;
+    --focus: #ff8b6e;
+    color-scheme: dark;
+  }
+
+  body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55; padding-inline: 16px; padding-block: 40px 64px; }
+  * { box-sizing: border-box; }
+  main { max-width: 720px; margin-inline: auto; display: flex; flex-direction: column; gap: 40px; }
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 400; line-height: 1.1; margin: 0; text-wrap: balance; }
+  h1 { font-size: clamp(2.4rem, 7vw, 3.4rem); }
+  h2 { font-size: 2rem; }
+  h3 { font-size: 1.35rem; }
+  p { margin: 0; max-width: 65ch; }
+  .eyebrow { font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .lede { color: var(--muted); font-size: 1.1rem; }
+  header { display: flex; flex-direction: column; gap: 14px; }
+  section { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+  /* Scale legend */
+  .legend { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; font-size: 0.78rem; color: var(--muted); text-align: center; }
+  .legend b { display: block; font-size: 1rem; color: var(--fg); font-variant-numeric: tabular-nums; }
+  @media (max-width: 520px) { .legend span { font-size: 0.66rem; } }
+
+  /* Items */
+  .item { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .item fieldset { border: 0; padding: 0; margin: 0; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+  .item legend { padding: 0; font-size: 1.1rem; font-weight: 500; display: flex; gap: 10px; }
+  .item legend .n { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .choices { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .choices label { position: relative; }
+  .choices input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .choices span { display: flex; align-items: center; justify-content: center; height: 48px; border: 1.5px solid var(--line); border-radius: 8px; font-weight: 600; font-variant-numeric: tabular-nums; background: var(--bg); transition: background .12s, border-color .12s; }
+  .choices label:hover span { border-color: var(--accent); }
+  .choices input:checked + span { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+  .choices input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .picked { font-size: 0.88rem; color: var(--muted); min-height: 1.4em; }
+
+  .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+  .progress { color: var(--muted); font-size: 0.92rem; font-variant-numeric: tabular-nums; }
+  button { font: inherit; font-weight: 600; border-radius: 8px; padding: 12px 20px; cursor: pointer; border: 1.5px solid var(--accent); }
+  .primary { background: var(--accent); color: var(--accent-fg); }
+  .primary:disabled { opacity: 0.45; cursor: not-allowed; }
+  .secondary { background: transparent; color: var(--accent); }
+
+  /* Results */
+  .result { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 24px 20px; display: flex; flex-direction: column; gap: 22px; scroll-margin-top: 16px; }
+  .score-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px; }
+  .score-big { font-family: var(--font-display); font-size: 4.5rem; line-height: 1; font-variant-numeric: tabular-nums; }
+  .score-big small { font-size: 1.4rem; color: var(--muted); }
+  .score-band { font-size: 1.25rem; font-weight: 600; }
+  .score-mean { color: var(--muted); font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+  .interp { display: flex; flex-direction: column; gap: 12px; }
+
+  /* Score bar */
+  .bar-wrap { display: flex; flex-direction: column; gap: 6px; }
+  .bar { position: relative; display: flex; height: 22px; border-radius: 6px; overflow: hidden; }
+  .bar i { display: block; height: 100%; border-right: 2px solid var(--surface); }
+  .bar i:last-child { border-right: 0; }
+  .marker-lane { position: relative; height: 34px; }
+  .marker { position: absolute; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; color: var(--marker); font-weight: 700; font-size: 0.82rem; transition: left .4s ease; }
+  .marker::before { content: ""; width: 0; height: 0; border-left: 7px solid transparent; border-right: 7px solid transparent; border-bottom: 9px solid var(--marker); }
+  .ticks { display: flex; font-size: 0.74rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .ticks span { text-align: center; }
+
+  .answers { display: flex; flex-direction: column; gap: 4px; font-size: 0.92rem; }
+  .answers div { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding-block: 6px; border-top: 1px solid var(--line); }
+  .answers b { font-variant-numeric: tabular-nums; }
+
+  /* Guide */
+  .guide { display: flex; flex-direction: column; gap: 10px; }
+  .band { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+  .band.you { border-color: var(--marker); box-shadow: 0 0 0 2px var(--marker); }
+  .band summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 10px; }
+  .band summary::-webkit-details-marker { display: none; }
+  .band summary::after { content: "+"; margin-left: auto; font-size: 1.3rem; color: var(--muted); }
+  .band[open] summary::after { content: "–"; }
+  .swatch { width: 14px; height: 36px; border-radius: 4px; flex: none; }
+  .range { font-variant-numeric: tabular-nums; font-weight: 700; min-width: 3.4ch; }
+  .band .name { font-weight: 500; }
+  .youtag { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--marker); font-weight: 700; }
+  .band .body { padding: 0 16px 16px 44px; display: flex; flex-direction: column; gap: 10px; color: var(--muted); }
+  .band .body p { color: var(--fg); }
+
+  .factors { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+  .factor { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .factor p { font-size: 0.95rem; color: var(--muted); }
+
+  .reflect { display: flex; flex-direction: column; gap: 10px; padding-left: 20px; margin: 0; }
+  .reflect li { max-width: 65ch; }
+
+  .note { font-size: 0.92rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+  footer { font-size: 0.85rem; color: var(--muted); display: flex; flex-direction: column; gap: 8px; }
+  #copy-status { font-size: 0.9rem; color: var(--muted); }
+  @media (prefers-reduced-motion: reduce) { .marker, .choices span { transition: none; } }
+</style>
+</head>
+<body>
+
+<main>
+  <header>
+    <div class="eyebrow">Self-assessment</div>
+    <h1>Satisfaction with Life Scale</h1>
+    <p class="lede">Five statements, about one minute. You will get a score from 5 to 35 and a plain-language explanation of what that range means. Your answers stay in your browser. Nothing is sent or saved.</p>
+  </header>
+
+  <section aria-labelledby="take">
+    <h2 id="take">Take the scale</h2>
+    <p>Below are five statements you may agree or disagree with. For each one, pick the number that matches your agreement. Please be open and honest.</p>
+    <div class="legend" aria-hidden="true">
+      <span><b>1</b>Strongly disagree</span>
+      <span><b>2</b>Disagree</span>
+      <span><b>3</b>Slightly disagree</span>
+      <span><b>4</b>Neither</span>
+      <span><b>5</b>Slightly agree</span>
+      <span><b>6</b>Agree</span>
+      <span><b>7</b>Strongly agree</span>
+    </div>
+    <form id="swls" novalidate>
+      <div id="items" style="display:flex;flex-direction:column;gap:14px"></div>
+      <div class="actions" style="margin-top:20px">
+        <button type="submit" class="primary" id="submit" disabled>See my score</button>
+        <button type="button" class="secondary" id="reset">Start over</button>
+        <span class="progress" id="progress" aria-live="polite">0 of 5 answered</span>
+      </div>
+    </form>
+  </section>
+
+  <section id="result-section" aria-labelledby="res-h" hidden>
+    <div class="result" id="result" tabindex="-1">
+      <div class="eyebrow">Your result</div>
+      <h2 id="res-h" class="sr" style="position:absolute;left:-9999px">Your result</h2>
+      <div class="score-row">
+        <div class="score-big"><span id="score">0</span><small> / 35</small></div>
+        <div>
+          <div class="score-band" id="band-name"></div>
+          <div class="score-mean" id="mean"></div>
+        </div>
+      </div>
+      <div class="bar-wrap">
+        <div class="marker-lane"><div class="marker" id="marker"><span id="marker-label">You</span></div></div>
+        <div class="bar" id="bar" role="img" aria-label="Score scale from 5 to 35"></div>
+        <div class="ticks" id="ticks"></div>
+      </div>
+      <div class="interp" id="interp"></div>
+      <div>
+        <h3 style="margin-bottom:8px">Your answers</h3>
+        <div class="answers" id="answers"></div>
+      </div>
+      <div class="actions">
+        <button type="button" class="secondary" id="copy">Copy my results</button>
+        <span id="copy-status" aria-live="polite"></span>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="guide-h">
+    <h2 id="guide-h">What the scores mean</h2>
+    <p>Add your five answers to get a total from 5 to 35. If you prefer to divide by 5, the same ranges become 1 to 7. Select a range to read more.</p>
+    <div class="guide" id="guide"></div>
+  </section>
+
+  <section aria-labelledby="factors-h">
+    <h2 id="factors-h">What shapes life satisfaction</h2>
+    <p>There is no single key to life satisfaction. It is a recipe with several ingredients. Most people can name the ones that matter to them, though temperament, a general tendency to be happy or unhappy, can color the answers.</p>
+    <div class="factors">
+      <div class="factor"><h3>Relationships</h3><p>Close, supportive family and friends are among the strongest influences. Losing someone close can lower satisfaction, and recovery can take time.</p></div>
+      <div class="factor"><h3>Work and roles</h3><p>School, paid or unpaid work, or a role like caregiver. Meaningful work that fits your strengths helps. Stalled progress on important goals hurts.</p></div>
+      <div class="factor"><h3>Personal life</h3><p>Satisfaction with yourself, spiritual or religious life, learning and growth, leisure, and health. Frustration in these areas can be a strong source of dissatisfaction.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="reflect-h">
+    <h2 id="reflect-h">Questions to think about</h2>
+    <ol class="reflect">
+      <li>Which of the five statements did you rate highest? Which lowest? What explains the gap?</li>
+      <li>Was your score shaped by something recent, or has it felt this way for a long time?</li>
+      <li>Which area of life (relationships, work or school, personal growth, health, leisure) contributes most to your answers?</li>
+      <li>Is there one change, large or small, that would move one of your ratings up by a point?</li>
+    </ol>
+  </section>
+
+  <div class="note">
+    <p><strong>This is a reflection tool, not a diagnosis.</strong> One score on one day cannot describe your wellbeing. If you are struggling, consider talking with a friend, a counselor, or your campus counseling center. In the United States you can call or text 988 at any time to reach the Suicide and Crisis Lifeline.</p>
+  </div>
+
+  <footer>
+    <p>Satisfaction with Life Scale and score interpretations by Ed Diener. Copyright Ed Diener; use is free of charge and granted by permission. The score guide text on this page is condensed from "Understanding Scores on the Satisfaction with Life Scale" (Diener, 2006).</p>
+    <p>Diener, E., Emmons, R. A., Larsen, R. J., &amp; Griffin, S. (1985). The Satisfaction with Life Scale. <em>Journal of Personality Assessment, 49</em>(1), 71–75.</p>
+  </footer>
+</main>
+
+<script>
+(function () {
+  var ITEMS = [
+    "In most ways my life is close to my ideal.",
+    "The conditions of my life are excellent.",
+    "I am satisfied with life.",
+    "So far I have gotten the important things I want in life.",
+    "If I could live my life over, I would change almost nothing."
+  ];
+  var LABELS = ["", "Strongly disagree", "Disagree", "Slightly disagree", "Neither agree nor disagree", "Slightly agree", "Agree", "Strongly agree"];
+
+  var COMMON = "Of course, one score is a snapshot. Satisfaction is shaped by close relationships, work or school, personal growth, health and leisure, and it usually changes over time.";
+
+  var BANDS = [
+    { lo: 5, hi: 9, name: "Extremely dissatisfied", c: "var(--b1)", span: 5,
+      text: [
+        "People who score in this range are usually extremely unhappy with their current life. Sometimes this follows a recent event such as unemployment or the loss of a loved one. Sometimes it reflects a chronic problem. Often it comes from dissatisfaction in several areas of life at once.",
+        "Whatever the reason, the help of others may be needed: a friend or family member, a member of the clergy, or a psychologist or other counselor. If the dissatisfaction is chronic, change is needed, and others can often help."
+      ] },
+    { lo: 10, hi: 14, name: "Dissatisfied", c: "var(--b2)", span: 5,
+      text: [
+        "People in this range are substantially dissatisfied. Several areas of life may not be going well, or one or two may be going very badly.",
+        "If it is a response to a recent event such as bereavement, divorce or a significant problem at work, satisfaction will probably return over time. If it has been chronic, changes in attitudes, patterns of thinking and life activities are probably in order. Unhappiness at this level can also be a distraction that gets in the way of functioning well. Talking to a friend, a counselor or another specialist can help you get moving in the right direction, although positive change is up to you."
+      ] },
+    { lo: 15, hi: 19, name: "Slightly below average", c: "var(--b3)", span: 5,
+      text: [
+        "People in this range usually have small but significant problems in several areas, or many areas that are fine and one that is a substantial problem.",
+        "If you moved down from a higher level because of a recent event, things usually improve over time. If you are chronically slightly dissatisfied in many areas, some changes might be in order. Sometimes a person expects too much, and sometimes life changes are needed. Temporary dissatisfaction is common and normal. A chronic level across several areas calls for reflection."
+      ] },
+    { lo: 20, hi: 24, name: "Average", c: "var(--b4)", span: 5,
+      text: [
+        "The average life satisfaction in economically developed nations falls in this range. Most people are generally satisfied but have some areas where they would very much like improvement.",
+        "Some people score here because they are mostly satisfied with most areas but see room for improvement in each. Others are satisfied with most areas but want large improvements in one or two. Having areas that need improvement is normal. Someone in this range would usually like to move higher by making some life changes."
+      ] },
+    { lo: 25, hi: 29, name: "High", c: "var(--b5)", span: 5,
+      text: [
+        "People who score in this range like their lives and feel that things are going well. Their lives are not perfect, but things are mostly good.",
+        "Being satisfied does not mean being complacent. Growth and challenge may be part of the reason for the satisfaction. For most people here, life is enjoyable and the major domains (work or school, family, friends, leisure and personal development) are going well. The person may draw motivation from the areas of dissatisfaction."
+      ] },
+    { lo: 30, hi: 35, name: "Very high; highly satisfied", c: "var(--b6)", span: 6,
+      text: [
+        "People who score in this range love their lives and feel that things are going very well. Their lives are not perfect, but things are about as good as lives get.",
+        "Being satisfied does not mean being complacent. Growth and challenge might be part of the reason the person is satisfied. For most people in this range, life is enjoyable and the major domains are going well: work or school, family, friends, leisure and personal development."
+      ] }
+  ];
+
+  var answers = [null, null, null, null, null];
+  var $ = function (id) { return document.getElementById(id); };
+
+  function bandFor(score) {
+    for (var i = 0; i < BANDS.length; i++) if (score >= BANDS[i].lo && score <= BANDS[i].hi) return i;
+    return 0;
+  }
+
+  // Items
+  var itemsEl = $("items");
+  ITEMS.forEach(function (text, i) {
+    var box = document.createElement("div");
+    box.className = "item";
+    var html = '<fieldset><legend><span class="n">' + (i + 1) + '.</span><span>' + text + '</span></legend><div class="choices">';
+    for (var v = 1; v <= 7; v++) {
+      html += '<label><input type="radio" name="q' + i + '" id="q' + i + '_' + v + '" value="' + v + '" aria-label="' + v + ', ' + LABELS[v] + '"><span>' + v + '</span></label>';
+    }
+    html += '</div><div class="picked" id="picked' + i + '" aria-live="polite"></div></fieldset>';
+    box.innerHTML = html;
+    itemsEl.appendChild(box);
+  });
+
+  function updateProgress() {
+    var n = answers.filter(function (a) { return a !== null; }).length;
+    $("progress").textContent = n + " of 5 answered";
+    $("submit").disabled = n < 5;
+  }
+
+  itemsEl.addEventListener("change", function (e) {
+    var t = e.target;
+    if (t.type !== "radio") return;
+    var i = parseInt(t.name.slice(1), 10), v = parseInt(t.value, 10);
+    answers[i] = v;
+    $("picked" + i).textContent = v + " = " + LABELS[v];
+    updateProgress();
+    if (!$("result-section").hidden) render();
+  });
+
+  // Bar and ticks
+  var bar = $("bar"), ticks = $("ticks");
+  BANDS.forEach(function (b) {
+    var seg = document.createElement("i");
+    seg.style.flex = b.span + " 1 0";
+    seg.style.background = b.c;
+    bar.appendChild(seg);
+    var tk = document.createElement("span");
+    tk.style.flex = b.span + " 1 0";
+    tk.textContent = b.lo + "–" + b.hi;
+    ticks.appendChild(tk);
+  });
+
+  // Guide
+  var guide = $("guide");
+  BANDS.slice().reverse().forEach(function (b) {
+    var idx = BANDS.indexOf(b);
+    var d = document.createElement("details");
+    d.className = "band";
+    d.id = "band" + idx;
+    d.innerHTML = '<summary><span class="swatch" style="background:' + b.c + '"></span><span class="range">' + b.lo + '–' + b.hi + '</span><span class="name">' + b.name + '</span><span class="youtag" hidden>Your range</span></summary><div class="body">' +
+      b.text.map(function (p) { return "<p>" + p + "</p>"; }).join("") + '</div>';
+    guide.appendChild(d);
+  });
+
+  function scoreOf() { return answers.reduce(function (a, b) { return a + b; }, 0); }
+
+  function render() {
+    var s = scoreOf(), bi = bandFor(s), b = BANDS[bi];
+    $("score").textContent = s;
+    $("band-name").textContent = b.name;
+    $("mean").textContent = "Average per item: " + (s / 5).toFixed(1) + " on the 1–7 scale";
+    $("marker-label").textContent = "You: " + s;
+    $("marker").style.left = (((s - 5 + 0.5) / 31) * 100) + "%";
+    $("interp").innerHTML = b.text.map(function (p) { return "<p>" + p + "</p>"; }).join("") + "<p>" + COMMON + "</p>";
+    $("answers").innerHTML = ITEMS.map(function (t, i) {
+      return "<div><span>" + (i + 1) + ". " + t + "</span><b>" + answers[i] + " · " + LABELS[answers[i]] + "</b></div>";
+    }).join("");
+    BANDS.forEach(function (_, i) {
+      var el = $("band" + i);
+      el.classList.toggle("you", i === bi);
+      el.querySelector(".youtag").hidden = i !== bi;
+    });
+  }
+
+  $("swls").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (answers.some(function (a) { return a === null; })) return;
+    $("result-section").hidden = false;
+    render();
+    $("copy-status").textContent = "";
+    var r = $("result");
+    r.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    r.focus({ preventScroll: true });
+  });
+
+  $("reset").addEventListener("click", function () {
+    answers = [null, null, null, null, null];
+    $("swls").reset();
+    for (var i = 0; i < 5; i++) $("picked" + i).textContent = "";
+    $("result-section").hidden = true;
+    BANDS.forEach(function (_, i) {
+      var el = $("band" + i); el.classList.remove("you"); el.querySelector(".youtag").hidden = true;
+    });
+    updateProgress();
+    window.scrollTo({ top: 0 });
+  });
+
+  $("copy").addEventListener("click", function () {
+    var s = scoreOf(), b = BANDS[bandFor(s)];
+    var lines = ["Satisfaction with Life Scale", "Total score: " + s + " / 35 (" + b.name + ")", "Average per item: " + (s / 5).toFixed(1) + " / 7", ""];
+    ITEMS.forEach(function (t, i) { lines.push((i + 1) + ". " + t + " — " + answers[i] + " (" + LABELS[answers[i]] + ")"); });
+    var text = lines.join("\n");
+    var status = $("copy-status");
+    function fallback() {
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(ta);
+      status.textContent = ok ? "Copied." : "Copy was blocked. Select the results above and copy them by hand.";
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { status.textContent = "Copied."; }, fallback);
+    } else fallback();
+  });
+
+  updateProgress();
+})();
+</script>
+</body>
+</html>
